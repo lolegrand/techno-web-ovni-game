@@ -8,6 +8,10 @@ class Laser {
         return this.xLaser;
     }
 
+    get hitBox() {
+        return [this.xLaser, this.yLaser, Laser.#widthLaser, Laser.#heightLaser];
+    }
+
     constructor(yLaser, xLaser) {
         this.yLaser = yLaser;
         this.xLaser = xLaser;

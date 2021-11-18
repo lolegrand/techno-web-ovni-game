@@ -2,11 +2,11 @@ import { Ship } from "./model/ship.js";
 import { Alien, AlienFabric } from "./model/alien.js";
 
 var animFrame = window.requestAnimationFrame ||
-            window.webkitRequestAnimationFrame ||
-            window.mozRequestAnimationFrame    ||
-            window.oRequestAnimationFrame      ||
-            window.msRequestAnimationFrame     ||
-            null;
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame    ||
+    window.oRequestAnimationFrame      ||
+    window.msRequestAnimationFrame     ||
+    null;
 
 //Canvas
 var divArena;
@@ -23,18 +23,17 @@ var backgroundWidth = 1782;
 var backgroundHeight = 600;
 
 function updateScene() {
-    "use strict"; 
+    "use strict";
     xBackgroundOffset = (xBackgroundOffset - xBackgroundSpeed) % backgroundWidth;
 }
 
 function drawScene() {
-    "use strict"; 
+    "use strict";
     canArena.style.backgroundPosition = xBackgroundOffset + "px 0px" ;
 }
 
 function updateGame() {
     updateScene();
-
     ship.update();
     lasers.map((l) => l.update());
     if (lasers.length !== 0) {
@@ -43,21 +42,68 @@ function updateGame() {
     aliens.map((a) => a.update());
     if (aliens.length !== 0) {
         aliens = aliens.filter((a) => a.x >= -30);
+        aliens = aliens.filter((a) => a.status === "Alive" || a.status === "Destroying");
     }
     alienFabric.update();
+    hitBoxManagement();
+}
+
+function hitBoxManagement() {
+    let laserFilter = lasers.filter((l) => {
+        for (const a of aliens) {
+            if (isHit(l.hitBox, a.hitBox))   {
+                if (a.status !== "Destroying")
+                    return false;
+            }
+        }
+        return true;
+    });
+
+    aliens.map((a) => {
+        for (const l of lasers) {
+            if (isHit(a.hitBox, l.hitBox)) {
+                if (a.status !== "Destroying")
+                    a.destroy();
+            }
+        }
+    });
+
+    lasers = laserFilter;
+}
+
+function isHit(hitBoxOne, hitBoxTwo) {
+    let [x1,y1,w1,h1] = hitBoxOne;
+    let [x2,y2,w2,h2] = hitBoxTwo;
+    if (x1 !== x2) {
+        if (x1 <= x2 && (x1 + w1) < x2) {
+            return false;
+        }
+        if (x1 >= x2 && x1 > (x2 + w2)) {
+            return false;
+        }
+    }
+    if (y1 !== y2) {
+        if (y1 <= y2 && (y1 + h1) < y2) {
+            return false;
+        }
+        if (y1 >= y2 && y1 > (y2 + h2)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function drawGame() {
     drawScene();
     ship.draw();
     lasers.map((l) => l.draw());
-    aliens.map((a)=>a.draw())
+    aliens.map((a) => a.draw());
 }
 
 function clearGame() {
     ship.clear();
     lasers.map((l) => l.clear());
-    aliens.map((a)=>a.clear());
+    aliens.map((a) => a.clear());
 }
 
 function mainLoop () {
@@ -67,7 +113,7 @@ function mainLoop () {
 }
 
 function recursiveAnim () {
-    "use strict"; 
+    "use strict";
     mainLoop();
     animFrame( recursiveAnim );
 }
@@ -90,7 +136,6 @@ function init() {
     ship.onShoot = function (laser) {
         lasers.push(laser);
     }
-
 
     animFrame( recursiveAnim );
 }

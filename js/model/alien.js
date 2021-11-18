@@ -6,11 +6,16 @@ class Alien {
     static alienWidth = 28;
     static alienHeight = 16;
 
+    #destroyingFramePause = 0;
     #framePause = 0;
     #frame = 0;
 
     get x() {
         return this.xAlien;
+    }
+
+    get hitBox() {
+        return [this.xAlien, this.yAlien, Alien.alienWidth, Alien.alienHeight];
     }
 
     constructor(xAlien, yAlien) {
@@ -19,20 +24,39 @@ class Alien {
         this.xAlien = xAlien;
         this.yAlien = yAlien;
         this.context = document.getElementById("canArena").getContext("2d");
+        this.status = "Alive";
     }
 
     draw() {
-        this.context.drawImage(
-            this.imgAlien,
-            0,
-            Alien.origAlienHeight * this.#frame,
-            Alien.origAlienWidth,
-            Alien.origAlienHeight,
-            this.xAlien,
-            this.yAlien,
-            Alien.alienWidth,
-            Alien.alienHeight
-        );
+        if (this.status === "Alive") {
+            this.context.drawImage(
+                this.imgAlien,
+                0,
+                Alien.origAlienHeight * this.#frame,
+                Alien.origAlienWidth,
+                Alien.origAlienHeight,
+                this.xAlien,
+                this.yAlien,
+                Alien.alienWidth,
+                Alien.alienHeight
+            );
+        }
+
+        if (this.status === "Destroying") {
+            let x = this.destroyingFrame % 4;
+            let y = Math.floor(this.destroyingFrame / 4);
+            this.context.drawImage(
+                this.imgAlien,
+                64 * x,
+                64 * y,
+                64,
+                64,
+                this.xAlien,
+                this.yAlien,
+                Alien.alienWidth,
+                Alien.alienHeight
+            );
+        }
     }
 
     clear() {
@@ -46,11 +70,30 @@ class Alien {
 
     update() {
         this.#framePause ++;
+
         if (this.#framePause === 5) {
             this.#frame = (this.#frame + 1) % 6;
             this.#framePause = 0;
         }
+
+        if (this.status === "Destroying") {
+            this.#destroyingFramePause ++;
+
+            if (this.#destroyingFramePause === 5) {
+                this.destroyingFrame++;
+                this.#destroyingFramePause = 0;
+            }
+            if (this.destroyingFrame === 16) {
+                this.status = "Destroyed";
+            }
+        }
         this.#calculateMovement();
+    }
+
+    destroy() {
+        this.status = "Destroying";
+        this.imgAlien.src = "./assets/boom.png";
+        this.destroyingFrame = 0;
     }
 
     #calculateMovement() {
