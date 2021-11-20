@@ -2,16 +2,20 @@ export {Ship}
 import {Laser} from "./laser.js"
 
 class Ship {
-    static xShip = 10;
-    static yShipSpeed = 2;
-    static shipHeight = 16;
-    static shipWidth = 32;
-    static shipImgHeight = 29;
-    static shipImgWidth = 64;
+    static #xShip = 10;
+    static #yShipSpeed = 2;
+    static #shipHeight = 16;
+    static #shipWidth = 32;
+    static #shipImgHeight = 29;
+    static #shipImgWidth = 64;
 
     #frame = 0;
     #goUp = false;
     #goDown = false;
+
+    get hitBox() {
+        return [Ship.#xShip, this.yShip, Ship.#shipWidth, Ship.#shipHeight];
+    }
 
     constructor() {
         this.imgShip = new Image();
@@ -45,13 +49,13 @@ class Ship {
             if (this.yShip <= 0) {
                 return;
             }
-            this.yShip =  this.yShip - Ship.yShipSpeed;
+            this.yShip =  this.yShip - Ship.#yShipSpeed;
         }
         if (this.#goDown) {
-            if (this.yShip >= this.canvas.height - Ship.shipHeight) {
+            if (this.yShip >= this.canvas.height - Ship.#shipHeight) {
                 return;
             }
-            this.yShip =  this.yShip + Ship.yShipSpeed;
+            this.yShip =  this.yShip + Ship.#yShipSpeed;
         }
     }
 
@@ -60,17 +64,17 @@ class Ship {
             this.imgShip,
             0,
             0,
-            Ship.shipImgWidth,
-            Ship.shipImgHeight,
-            Ship.xShip,
+            Ship.#shipImgWidth,
+            Ship.#shipImgHeight,
+            Ship.#xShip,
             this.yShip,
-            Ship.shipWidth,
-            Ship.shipHeight
+            Ship.#shipWidth,
+            Ship.#shipHeight
         );
     }
 
     clear() {
-        this.context.clearRect(Ship.xShip, this.yShip, Ship.shipWidth, Ship.shipHeight);
+        this.context.clearRect(Ship.#xShip, this.yShip, Ship.#shipWidth, Ship.#shipHeight);
     }
 
     onShoot(laser) {}
@@ -83,7 +87,7 @@ class Ship {
             this.#goUp = true;
         }
         if (event.key === " ") {
-            this.onShoot(new Laser(this.yShip + Ship.shipHeight / 4 , Ship.xShip + Ship.shipWidth));
+            this.onShoot(new Laser(this.yShip + Ship.#shipHeight / 4 , Ship.#xShip + Ship.#shipWidth));
         }
     }
 
