@@ -1,6 +1,6 @@
 export {getRandomStrategy};
 
-const numberOfStrategy = 4;
+const numberOfStrategy = 3;
 
 function getRandomStrategy() {
     const val = Math.floor(Math.random() * numberOfStrategy);
