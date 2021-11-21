@@ -1,4 +1,5 @@
 export {Alien, AlienFabric};
+import {getRandomStrategy} from "./strategy/alienStrategy.js";
 
 class Alien {
     static origAlienWidth = 40;
@@ -23,8 +24,10 @@ class Alien {
         this.imgAlien.src = "./assets/Enemy/HueShifted/eSpritesheet_40x30_hue"+Math.floor(Math.random() * 5)+".png";
         this.xAlien = xAlien;
         this.yAlien = yAlien;
-        this.context = document.getElementById("canArena").getContext("2d");
+        this.canvas = document.getElementById("canArena");
+        this.context = this.canvas.getContext("2d");
         this.status = "Alive";
+        this.movementStrategy = getRandomStrategy();
     }
 
     draw() {
@@ -84,10 +87,11 @@ class Alien {
                 this.#destroyingFramePause = 0;
             }
             if (this.destroyingFrame === 16) {
+                this.onDestroyed();
                 this.status = "Destroyed";
             }
         }
-        this.#calculateMovement();
+        this.#applyMovement();
     }
 
     destroy() {
@@ -96,10 +100,13 @@ class Alien {
         this.destroyingFrame = 0;
     }
 
-    #calculateMovement() {
-        this.xAlien --;
+    #applyMovement() {
+        let [movX, movY] = this.movementStrategy.calculateNextStep(this.xAlien, this.yAlien, this.canvas.height);
+        this.xAlien += movX;
+        this.yAlien += movY;
     }
 
+    onDestroyed() {}
 }
 
 class AlienFabric {

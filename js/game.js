@@ -19,7 +19,11 @@ let ArenaHeight = 300;
 let xBackgroundOffset = 0;
 const xBackgroundSpeed = 1;
 const backgroundWidth = 1782;
-const backgroundHeight = 600;
+
+//Button and text
+let buttonRestart;
+let numberOfKillsField;
+let gameStatusField;
 
 function manageHitBetweenObject(object1, object2) {
     let [x1,y1,w1,h1] = object1;
@@ -43,16 +47,8 @@ function manageHitBetweenObject(object1, object2) {
     return true;
 }
 
-function hitBoxManagement(aliens, lasers, ship) {
-    aliens.map((a) => {
-        for (const l of lasers) {
-            if (manageHitBetweenObject(a.hitBox, l.hitBox)) {
-                if (a.status !== "Destroying")
-                    a.destroy();
-            }
-        }
-    });
-    lasers = lasers.filter((l) => {
+function hitBoxManagement() {
+    let laserFilter = lasers.filter((l) => {
         for (const a of aliens) {
             if (manageHitBetweenObject(l.hitBox, a.hitBox))   {
                 if (a.status !== "Destroying")
@@ -61,9 +57,20 @@ function hitBoxManagement(aliens, lasers, ship) {
         }
         return true;
     });
+    aliens.map((a) => {
+        for (const l of lasers) {
+            if (manageHitBetweenObject(a.hitBox, l.hitBox)) {
+                if (a.status !== "Destroying")
+                    a.destroy();
+            }
+        }
+    });
+
+    lasers = laserFilter;
+
     aliens.forEach((a) => {
         if (manageHitBetweenObject(a.hitBox, ship.hitBox) && a.status === "Alive") {
-            console.log("You loose");
+            gameStatusField.innerHTML = gameStatus = "You loose";
         }
     })
 }
@@ -90,8 +97,8 @@ function updateGame() {
         aliens = aliens.filter((a) => a.x >= -30);
         aliens = aliens.filter((a) => a.status === "Alive" || a.status === "Destroying");
     }
+    hitBoxManagement();
     alienFabric.update();
-    hitBoxManagement(aliens, lasers, ship);
 }
 
 function drawGame() {
@@ -111,7 +118,10 @@ function mainLoop () {
     clearGame();
     updateGame();
     drawGame();
-    animFrame( mainLoop );
+
+    if (gameStatus === "") {
+        animFrame( mainLoop );
+    }
 }
 
 function init() {
@@ -124,11 +134,18 @@ function init() {
     conArena = canArena.getContext("2d");
     divArena.appendChild(canArena);
 
+    gameStatusField = document.getElementById("gameStatus");
+    numberOfKillsField = document.getElementById("killDisplay");
+
     ship = new Ship();
 
     alienFabric = new AlienFabric();
     alienFabric.onCreateAlien = function (alien) {
         aliens.push(alien);
+        alien.onDestroyed = function () {
+            killCount++;
+            numberOfKillsField.innerHTML = "Number of kills : " + killCount + ", Goal : 25";
+        }
     }
 
     ship.onShoot = function (laser) {
@@ -144,3 +161,5 @@ let ship;
 let lasers = [];
 let alienFabric;
 let aliens = [];
+let gameStatus = "";
+let killCount = 0;
